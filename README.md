@@ -15,14 +15,14 @@ This repository implements an **Extended Kalman Filter (EKF)** to track an aircr
 
 We are tasked with tracking an aircraft flying at **constant velocity** and **constant altitude** using a ground-based radar. The radar provides two noisy measurements:
 
-1. **Slant range distance** ($r$): the distance between the radar and the aircraft.
-2. **Elevation angle** ($c$): the angle between the radar's position and the aircraft's horizontal position.
+1. **Slant range distance** (r): the distance between the radar and the aircraft.
+2. **Elevation angle** (c): the angle between the radar's position and the aircraft's horizontal position.
 
 The state of the aircraft to be estimated includes:
-- Horizontal position ($x$)
-- Vertical position ($y$)
-- Horizontal velocity ($v_x$)
-- Vertical velocity ($v_y$)
+- Horizontal position (x)
+- Vertical position (y)
+- Horizontal velocity (v_x)
+- Vertical velocity (v_y)
 
 Given these measurements, we need to develop a model for real-world simulation and implement an onboard Extended Kalman Filter (EKF) to track the aircraft's position over time.
 
