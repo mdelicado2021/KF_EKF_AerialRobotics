@@ -214,9 +214,13 @@ P = (eye(4) - K * H) * P_pred;
 
 Se simuló el filtro de Kalman para un sistema con aceleración constante, y se obtuvieron gráficos de la posición y velocidad estimadas frente a las verdaderas.
 
+![image](https://github.com/user-attachments/assets/7d43c385-b154-4b35-8d91-3e9eb4ff5e95)
+
 ### Filtro de Kalman Extendido
 
 En la simulación del EKF, se utilizó un modelo no lineal con mediciones ruidosas de radar. Los resultados mostraron que el EKF fue capaz de rastrear la aeronave con precisión creciente a lo largo del tiempo.
+
+![image](https://github.com/user-attachments/assets/9c6d915e-ac10-4e99-8e2b-1abc86e40321)
 
 ## Conclusions
 
