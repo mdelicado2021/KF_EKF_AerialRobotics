@@ -1,233 +1,92 @@
 # Aircraft Tracking with Ground-Based Radar
 
-Este repositorio implementa dos filtros de Kalman: el **Filtro de Kalman** tradicional y el **Filtro de Kalman Extendido (EKF)** para el seguimiento de una aeronave en un plano vertical utilizando mediciones de radar en tierra. El objetivo es estimar la posición y velocidad de la aeronave a lo largo del tiempo, basado en mediciones ruidosas de su distancia oblicua y ángulo de elevación.
+This repository implements two Kalman filters: the traditional **Kalman Filter** and the **Extended Kalman Filter (EKF)** for tracking an aircraft in a vertical plane using ground-based radar measurements. The objective is to estimate the position and velocity of the aircraft over time, based on noisy measurements of its slant distance and angle of elevation.
 
 ## Table of Contents
-- [Problem Statement](#problem-statement)
-- [Mathematical Model](#mathematical-model)
-- [Code Implementation](#code-implementation)
-- [Results and Analysis](#results-and-analysis)
-- [Conclusions](#conclusions)
+- Kalman Filter (KF)](#kalman-filter-kf)
+- Extended Kalman Filter (EKF)](#extended-kalman-filter-extended-ekf)
 
 ---
 
-## Problem Statement
+## Kalman Filter (KF)
 
-Se nos asigna la tarea de rastrear una aeronave que vuela a **velocidad constante** y **altitud constante** usando un radar basado en tierra. El radar proporciona dos mediciones ruidosas:
+### Development of the mathematical models
 
-1. **Distancia oblicua (slant range)** ($r$): la distancia entre el radar y la aeronave.
-2. **Ángulo de elevación** ($c$): el ángulo entre la posición del radar y la posición horizontal de la aeronave.
+The traditional Kalman Filter is used to estimate the position and velocity of an aircraft moving with constant velocity, using noisy radar measurements. The mathematical model is based on linear dynamics and position measurements.
 
-El estado de la aeronave que queremos estimar incluye:
-- Posición horizontal ($x$)
-- Posición vertical ($y$)
-- Velocidad horizontal ($v_x$)
-- Velocidad vertical ($v_y$)
+* #### State Vector
 
-Dadas estas mediciones, necesitamos desarrollar un modelo de simulación y aplicar dos filtros de Kalman para rastrear la posición de la aeronave a lo largo del tiempo: uno lineal (Filtro de Kalman) y uno no lineal (Filtro de Kalman Extendido).
+     The state includes the horizontal position (xx) and horizontal velocity (vx).
 
----
+* #### Equation of State
 
-## Mathematical Model
+     The state transition is linear, assuming rectilinear motion with constant acceleration.
 
-### Filtro de Kalman (KF)
+* #### Measurement Equation
 
-Para el **Filtro de Kalman** tradicional, asumimos un movimiento en línea recta con una entrada de aceleración constante. Este modelo es adecuado para sistemas con dinámica lineal, como un movimiento con aceleración constante.
+     The noisy measurement is only of the horizontal position.
 
-#### Vector de Estado
+* #### Noise Covariances
 
-El vector de estado para el filtro de Kalman es:
+     Process noise affecting acceleration and measurement noise affecting position are considered.
 
-$$
-x = \begin{bmatrix} p \\ v \end{bmatrix}
-$$
+### Results and analysis of the results
 
-Donde:
-- $p$: posición
-- $v$: velocidad
+The Kalman filter was implemented and the position and velocity estimates were simulated against the true values. Plots were obtained showing the convergence of the estimates as they are updated with new measurements.
 
-#### Ecuación de Estado
+### Conclusions
 
-La ecuación de transición de estado (dinámica) es lineal:
-
-$$
-x_{k+1} = A x_k + B u_k
-$$
-
-Con:
-
-$$
-A = \begin{bmatrix} 1 & dt \\ 0 & 1 \end{bmatrix}, \quad B = \begin{bmatrix} 0.5 \cdot dt^2 \\ dt \end{bmatrix}
-$$
-
-#### Ecuación de Medición
-
-El sensor mide solo la posición, así que la ecuación de medición es:
-
-$$
-z_k = H x_k
-$$
-
-Con:
-
-$$
-H = \begin{bmatrix} 1 & 0 \end{bmatrix}
-$$
-
-#### Covarianzas de Ruido
-
-El filtro de Kalman usa dos fuentes de incertidumbre:
-- **Ruido del proceso** ($Q$): Afecta a la aceleración.
-- **Ruido de la medición** ($R$): Afecta a las mediciones de la posición.
-
-### Filtro de Kalman Extendido (EKF)
-
-El **Filtro de Kalman Extendido** maneja el problema no lineal de las mediciones de radar, que involucran la distancia oblicua ($r$) y el ángulo de elevación ($c$).
-
-#### Vector de Estado
-
-El vector de estado es:
-
-$$
-x = \begin{bmatrix} x \\ v_x \\ y \\ v_y \end{bmatrix}
-$$
-
-Donde:
-- $x$: posición horizontal
-- $v_x$: velocidad horizontal
-- $y$: posición vertical
-- $v_y$: velocidad vertical
-
-#### Mediciones de Radar
-
-Las mediciones de radar están relacionadas con el estado de manera no lineal:
-
-$$
-r = \sqrt{(x_r - x)^2 + (y_r - y)^2}
-$$
-
-$$
-c = \arctan\left( \frac{y - y_r}{x - x_r} \right)
-$$
-
-#### Modelo del Sistema
-
-La transición de estado es similar a la del Filtro de Kalman, pero las ecuaciones de medición son no lineales, por lo que se utiliza la **linealización** a través del Jacobiano ($H$) para aplicar el EKF.
+The Kalman Filter proved to be effective for linear systems, showing that the estimates converge to the true values as they are updated with noisy measurements.
 
 ---
 
-## Code Implementation
+## Extended Kalman Filter (EKF)
 
-### Kalman Filter (KF)
+### Development of the mathematical models
 
-#### Inicialización
+The Extended Kalman Filter (EKF) is used to estimate the position and velocity of an aircraft using radar measurements involving an oblique distance and an angle of elevation, which is a non-linear problem.
 
-```matlab
-dt = 0.1; % Duración del paso de tiempo
-x0 = [10; 10]; % Estado inicial: [posición; velocidad]
-P0 = [1 0; 0 1]; % Covarianza inicial
+* #### State Vector
 
-Q = [1^2, 0; 0, 1^2]; % Covarianza del ruido del proceso (aceleración)
-R = 1^2; % Covarianza del ruido de la medición (rango)
-```
+     State includes horizontal position (x), vertical position (y) and velocity (v).
 
-#### Predicción del Estado
+* #### Radar Measurements
 
-```
-A = [1 dt; 0 1];
-B = [0.5*dt^2; dt];
+     The noisy radar measurements are nonlinearly related to the state through the slant distance r = √((x - xr)² + (y - yr)²) and the elevation angle γ = arctan((y - yr) / (x - xr))
 
-% Predicción del estado
-x_pred = A * x + B * u;
-P_pred = A * P * A' + Q;
-```
+* #### System Model
 
-#### Actualización con las Mediciones
+     The state transition is similar to that of the KF, but a linearisation through the Jacobian is used to implement the EKF.
 
-```
-H = [1 0];
+  ```
+  matlab
+     % Jacobian of the measurement function
+     H = [(mu_pred(1) - x_r)/sqrt((mu_pred(1) - x_r)^2 + (mu_pred(3) - y_r)^2), 0, (mu_pred(3) - y_r)/sqrt((mu_pred(1) - x_r)^2 + (mu_pred(3) - y_r)^2);
+          -(mu_pred(3) - y_r)/((mu_pred(1) - x_r)^2 + (mu_pred(3) - y_r)^2), 0, (mu_pred(1) - x_r)/((mu_pred(1) - x_r)^2 + (mu_pred(3) - y_r)^2)];
+* #### Covarianzas de Ruido
 
-% Innovación
-y_k = z_real - H * x_pred;
+     Process noise affecting the velocity (σr = 5 m, σγ = 0.5◦) , and measurement noise affecting the slant distance and elevation angle (σv = 0.02 m s-1, σy = 0.1 m) are considered.
 
-% Ganancia de Kalman
-S = H * P_pred * H' + R;
-K = P_pred * H' / S;
+### Results and analysis of the results
 
-% Estado actualizado
-x = x_pred + K * y_k;
+The Extended Kalman Filter was implemented and simulations were performed to estimate the aircraft position and velocity. The plots show how the estimates converge and match the noisy measurements over time.
 
-% Covarianza actualizada
-P = (eye(2) - K * H) * P_pred;
-```
+![imagen](https://github.com/mdelicado2021/KF_EKF_AerialRobotics/blob/main/images/images_2/positionx_error2.png)
 
-### Extended Kalman Filter (EKF)
+![imagen](https://github.com/mdelicado2021/KF_EKF_AerialRobotics/blob/main/images/images_2/positiony_error2.png)
 
-#### Inicialización
+![imagen](https://github.com/mdelicado2021/KF_EKF_AerialRobotics/blob/main/images/images_2/vel_error2.png)
 
-```
-x0 = [0; 100; 1000; 0]; % Estado inicial: [x, vx, y, vy]
-P0 = diag([100, 25, 500, 100]); % Covarianza inicial
+![imagen](https://github.com/mdelicado2021/KF_EKF_AerialRobotics/blob/main/images/images_2/innovation2.png)
 
-Q = diag([0.02^2, 0.02^2, 0.1^2, 0.1^2]); % Covarianza del ruido del proceso
-R = diag([5^2, (0.5*pi/180)^2]); % Covarianza del ruido de medición (con ángulo en radianes)
-```
+![imagen](https://github.com/mdelicado2021/KF_EKF_AerialRobotics/blob/main/images/images_2/variance2.png)
 
-#### Predicción del Estado
 
-```
-F = [1 dt 0  0;
-     0  1 0  0;
-     0  0 1 dt;
-     0  0 0  1];
+### Conclusions
 
-x_pred = F * x; % Estado predicho
-P_pred = F * P * F' + Q; % Covarianza predicha
+The Extended Kalman Filter proved to be robust in dealing with non-linear systems such as radar measurements. As more measurements are incorporated, the estimates improve significantly, confirming the effectiveness of the EKF for accurate tracking of aircraft position and velocity in a noisy environment.
 
-```
+The Extended Kalman Filter proved to be a powerful tool for dealing with non-linear systems, such as radar measurements. As the filter receives more information, the error decreases significantly, confirming the robustness of the EKF for tracking the position and velocity of an aircraft with noisy measurements.
 
-#### Actualización con las Mediciones
 
-```
-% Jacobiano de la función de medición
-H = [(x_pred(1) - x_r)/r, 0, (x_pred(3) - y_r)/r, 0;
-     -(x_pred(3) - y_r)/(r^2), 0, (x_pred(1) - x_r)/(r^2), 0];
-
-% Innovación
-y_k = z_real - h(x_pred);
-
-% Ganancia de Kalman
-S = H * P_pred * H' + R;
-K = P_pred * H' / S;
-
-% Estado actualizado
-x = x_pred + K * y_k;
-
-% Covarianza actualizada
-P = (eye(4) - K * H) * P_pred;
-
-```
-
-## Results and Analysis
-
-### Filtro de Kalman
-
-Se simuló el filtro de Kalman para un sistema con aceleración constante, y se obtuvieron gráficos de la posición y velocidad estimadas frente a las verdaderas.
-
-![image](https://github.com/user-attachments/assets/7d43c385-b154-4b35-8d91-3e9eb4ff5e95)
-
-### Filtro de Kalman Extendido
-
-En la simulación del EKF, se utilizó un modelo no lineal con mediciones ruidosas de radar. Los resultados mostraron que el EKF fue capaz de rastrear la aeronave con precisión creciente a lo largo del tiempo.
-
-![image](https://github.com/user-attachments/assets/9c6d915e-ac10-4e99-8e2b-1abc86e40321)
-
-## Conclusions
-
-### Filtro de Kalman
-
-El Filtro de Kalman fue efectivo para sistemas lineales, mostrando que las estimaciones de posición y velocidad convergen a los valores verdaderos a medida que se actualizan con nuevas mediciones.
-
-### Filtro de Kalman Extendido
-
-El Filtro de Kalman Extendido demostró ser una herramienta poderosa para tratar sistemas no lineales, como las mediciones de radar. A medida que el filtro recibe más información, el error disminuye significativamente, lo que confirma la robustez del EKF para el seguimiento de la posición y velocidad de una aeronave con mediciones ruidosas.
+Translated with DeepL.com (free version)
