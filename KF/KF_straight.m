@@ -189,13 +189,13 @@ inn     =  zeros(1, num_itr+1);
 
 % Matrices de estado (A y B) y modelo de observación (H)
 A = [1 dt; 0 1];       % Matriz de transición de estado
-B = [0.5*dt^2; dt];    % Matriz de control
+B = [0.5*dt^2; dt];    % Matriz de control (aceleración)
+
 H = [1 0];             % Observación (solo se mide la posición)
 
 % Covarianzas del proceso y del sensor
-Q = [parm_OB.sigma_acc^2, 0; 0, parm_OB.sigma_acc^2]; % Covarianza del ruido del proceso (acelerómetro)
-R = parm_OB.sigma_range^2;                            % Covarianza del ruido del sensor (rango)
-
+Q = [0.25*dt^4, 0.5*dt^3; 0.5*dt^3, dt^2] * parm_OB.sigma_acc^2;  % Covarianza del proceso (ruido de aceleración)
+R = parm_OB.sigma_range^2;                                         % Covarianza del sensor (ruido del rango)
 
 
 %% Initial estimate and error covariance
